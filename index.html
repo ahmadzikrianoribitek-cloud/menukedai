@@ -152,15 +152,28 @@ main{ max-width:1100px; margin:0 auto; padding:24px 16px calc(60px + var(--safe-
   width:100%;
   position:relative;
   overflow:hidden;
-  padding:8px;
 }
-.item-photo img{ width:100%; height:100%; object-fit:contain; display:block; }
+.item-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+.item-photo::after{
+  content:'';
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height:38%;
+  background:linear-gradient(to bottom, rgba(255,253,247,0) 0%, var(--white) 92%);
+  pointer-events:none;
+}
 .item-photo.placeholder{
   display:flex; align-items:center; justify-content:center;
   background:linear-gradient(155deg, var(--teal-700), var(--teal-950));
 }
 .item-photo.placeholder svg{ width:44%; height:44%; opacity:0.85; }
-.item-body{ padding:11px 12px 13px; display:flex; flex-direction:column; gap:6px; flex:1; }
+.item-photo.placeholder::after{ content:none; }
+.item-body{
+  padding:11px 12px 13px;
+  margin-top:-14px;
+  position:relative; z-index:1;
+  display:flex; flex-direction:column; gap:6px; flex:1;
+}
 .item-name{
   font-size:14.5px; font-weight:700; color:var(--ink-900);
   line-height:1.3;
@@ -213,8 +226,9 @@ footer strong{ color:var(--teal-800); }
       <div class="brand">Warmindo Sandaga</div>
     </div>
   </div>
-  <h1>Lapar? <em>lihat</em><br/>menunya dulu.</h1>
-  <p>Semua menu & harga hari ini, pesan bisa ke admin miniso atau langsung ke kasir kedai :)</p>
+  <h1>lapar &amp; haus? <em>lihat</em><br/>menunya dulu.</h1>
+  <p>Semua menu & harga udah paling update, 
+    <p></p>kalau mau pesan bisa ke admin miniso atau langsung ke kasir kedai :)</p>
 </header>
 
 <div class="catnav-wrap">
