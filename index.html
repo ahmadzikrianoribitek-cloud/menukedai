@@ -145,8 +145,22 @@ main{ max-width:1100px; margin:0 auto; padding:24px 16px calc(60px + var(--safe-
   overflow:hidden;
   display:flex; flex-direction:column;
   transition:transform .15s ease, box-shadow .15s ease;
+  opacity:0;
+  animation:itemPop .38s ease forwards;
 }
 .item-card:hover{ transform:translateY(-3px); box-shadow:0 14px 26px -18px rgba(12,58,53,0.4); }
+@keyframes itemPop{
+  from{ opacity:0; transform:translateY(10px) scale(.98); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+.cat-section{
+  opacity:0;
+  animation:sectionIn .3s ease forwards;
+}
+@keyframes sectionIn{
+  from{ opacity:0; }
+  to{ opacity:1; }
+}
 .item-photo{
   aspect-ratio:1/1;
   width:100%;
@@ -264,6 +278,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// Aktifkan cache offline: kunjungan berikutnya, menu langsung tampil dari
+// data terakhir yang tersimpan di HP pengunjung sambil nunggu update dari server.
+// (Kalau dibuka di banyak tab sekaligus, browser cuma bisa aktifin di 1 tab —
+// itu wajar, bukan error, tab lain tetap jalan normal cuma tanpa cache).
+db.enablePersistence({ synchronizeTabs: true }).catch(err=>{
+  console.warn('Firestore persistence tidak aktif:', err.code);
+});
+
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
@@ -301,12 +323,14 @@ function slugify(s){
   return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'lainnya';
 }
 
-function itemCard(item){
+function itemCard(item, indexInCategory){
   const photo = item.imageUrl
     ? `<div class="item-photo"><img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.parentElement.outerHTML='&lt;div class=&quot;item-photo placeholder&quot;&gt;${PLACEHOLDER_ICON.replace(/"/g,'&quot;')}&lt;/div&gt;'"/></div>`
     : `<div class="item-photo placeholder">${PLACEHOLDER_ICON}</div>`;
+  // Delay bertahap tiap kartu biar kesannya muncul satu-satu dari atas
+  const delay = Math.min(indexInCategory * 45, 480);
   return `
-    <div class="item-card">
+    <div class="item-card" style="animation-delay:${delay}ms">
       ${photo}
       <div class="item-body">
         <div class="item-name">${escapeHtml(item.name)}</div>
@@ -327,16 +351,16 @@ function renderMenu(){
   if(!activeCategory || !cats.includes(activeCategory)) activeCategory = cats[0] || null;
   renderCatNav(cats);
 
-  main.innerHTML = cats.map(cat=>{
+  main.innerHTML = cats.map((cat, catIndex)=>{
     const items = menuItems.filter(m=>m.category===cat);
     return `
-      <section class="cat-section" id="cat-${slugify(cat)}">
+      <section class="cat-section" id="cat-${slugify(cat)}" style="animation-delay:${Math.min(catIndex*80,320)}ms">
         <div class="cat-heading">
           <h2>${escapeHtml(cat)}</h2>
           <span class="count">${items.length} menu</span>
         </div>
         <div class="grid">
-          ${items.map(itemCard).join('')}
+          ${items.map((item, i)=>itemCard(item, i)).join('')}
         </div>
       </section>`;
   }).join('');
