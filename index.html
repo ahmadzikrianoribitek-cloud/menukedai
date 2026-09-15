@@ -143,6 +143,7 @@ main{ max-width:1100px; margin:0 auto; padding:24px 16px calc(60px + var(--safe-
   border:1.5px solid var(--line);
   border-radius:16px;
   overflow:hidden;
+  position:relative;
   display:flex; flex-direction:column;
   transition:transform .15s ease, box-shadow .15s ease;
   opacity:0;
@@ -182,6 +183,26 @@ main{ max-width:1100px; margin:0 auto; padding:24px 16px calc(60px + var(--safe-
 }
 .item-photo.placeholder svg{ width:44%; height:44%; opacity:0.85; }
 .item-photo.placeholder::after{ content:none; }
+
+/* ===== HABIS (sold out) ===== */
+.item-card.sold-out .item-photo img{
+  filter:grayscale(1) contrast(0.95);
+  opacity:0.75;
+}
+.item-card.sold-out .item-photo.placeholder{
+  filter:grayscale(1);
+  opacity:0.6;
+}
+.item-card.sold-out .item-name,
+.item-card.sold-out .item-price{ opacity:0.55; }
+.soldout-badge{
+  position:absolute; top:8px; left:8px; z-index:2;
+  background:var(--rust-700); color:var(--cream-50);
+  font-size:10.5px; font-weight:700; letter-spacing:0.5px;
+  padding:4px 10px; border-radius:100px;
+  text-transform:uppercase;
+  box-shadow:0 4px 10px -4px rgba(0,0,0,0.4);
+}
 .item-body{
   padding:11px 12px 13px;
   margin-top:-14px;
@@ -324,13 +345,15 @@ function slugify(s){
 }
 
 function itemCard(item, indexInCategory){
+  const soldOut = !!item.soldOut;
   const photo = item.imageUrl
     ? `<div class="item-photo"><img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.parentElement.outerHTML='&lt;div class=&quot;item-photo placeholder&quot;&gt;${PLACEHOLDER_ICON.replace(/"/g,'&quot;')}&lt;/div&gt;'"/></div>`
     : `<div class="item-photo placeholder">${PLACEHOLDER_ICON}</div>`;
   // Delay bertahap tiap kartu biar kesannya muncul satu-satu dari atas
   const delay = Math.min(indexInCategory * 45, 480);
   return `
-    <div class="item-card" style="animation-delay:${delay}ms">
+    <div class="item-card ${soldOut?'sold-out':''}" style="animation-delay:${delay}ms">
+      ${soldOut?'<div class="soldout-badge">Habis</div>':''}
       ${photo}
       <div class="item-body">
         <div class="item-name">${escapeHtml(item.name)}</div>
